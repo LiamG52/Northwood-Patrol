@@ -203,7 +203,7 @@ function draw(){
   drawMiniMap();
   if(performance.now()>noticeUntil)msg.style.display='none';frame++
 }
-function loop(t){const dt=Math.min((t-tlast)/16.67,2);tlast=t;if(panel.style.display!=='block'){let dx=motion.x+(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dy=motion.y+(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);const len=Math.max(1,Math.hypot(dx,dy)),speed=(driving?10:3.5)*dt;moving=Math.hypot(dx,dy)>.07;if(moving){faceX=dx;faceY=dy;walkPhase+=dt*.30;if(driving)driveAngle=Math.atan2(dy,dx)+Math.PI/2;}moveSolid(player,dx/len*speed,dy/len*speed,driving?25:13);if(driving){car.x=player.x;car.y=player.y}else followPrisoner(dt)if(frame%12===0)updateText()}draw();requestAnimationFrame(loop)}
+function loop(t){const dt=Math.min((t-tlast)/16.67,2);tlast=t;if(panel.style.display!=='block'){let dx=motion.x+(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dy=motion.y+(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);const len=Math.max(1,Math.hypot(dx,dy)),speed=(driving?10:3.5)*dt;moving=Math.hypot(dx,dy)>.07;if(moving){faceX=dx;faceY=dy;walkPhase+=dt*.30;if(driving)driveAngle=Math.atan2(dy,dx)+Math.PI/2;}moveSolid(player,dx/len*speed,dy/len*speed,driving?25:13);if(driving){car.x=player.x;car.y=player.y}else followPrisoner(dt);if(frame%12===0)updateText()}draw();requestAnimationFrame(loop)}
 updateText();say('📻 Dispatch to P-1: burglary at Northwood Electronics, southwest district. Respond and investigate!');requestAnimationFrame(loop);
 })();
 </script></body></html>
