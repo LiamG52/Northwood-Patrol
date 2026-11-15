@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#0b1422"><title>Northwood Patrol — v0.3</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#0b1422"><title>Northwood Patrol — v0.4</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#081219;color:#f3ede1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;touch-action:none}canvas{width:100%;height:100%;display:block;image-rendering:pixelated}#hud{position:absolute;top:env(safe-area-inset-top);left:0;right:0;display:flex;align-items:flex-start;justify-content:space-between;gap:6px;padding:9px;pointer-events:none}#hud>*{pointer-events:auto}#info{background:linear-gradient(180deg,#101d29f5,#0a141fe9);border:2px solid #506775;border-left:4px solid #d6af63;border-radius:3px;padding:9px 12px;box-shadow:0 8px 22px #0008;font-size:12px;max-width:70%;line-height:1.5}#info strong{font-size:14px;color:#f0d192;letter-spacing:.05em}#menu{background:linear-gradient(180deg,#1b3140eb,#12222dea);border:2px solid #637e8c;color:#f5eddf;border-radius:4px;padding:11px;font-weight:700}#message{position:absolute;top:85px;left:50%;transform:translateX(-50%);width:min(92%,440px);background:#091720f5;border:2px solid #d3aa61;border-radius:4px;padding:11px;text-align:center;font-size:13px;display:none;pointer-events:none}#controls{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 18px);left:16px;right:16px;display:flex;align-items:flex-end;justify-content:space-between;pointer-events:none}#stick{width:128px;height:128px;border-radius:50%;border:2px solid #abc1d788;background:radial-gradient(circle,#1e40529d,#0c1e2b9e);position:relative;pointer-events:auto;touch-action:none}#nub{position:absolute;width:52px;height:52px;background:#91b2bfcc;border:2px solid #f4e9ce;border-radius:50%;left:36px;top:36px}#actions{display:flex;gap:8px;pointer-events:auto}button{touch-action:manipulation}#actions button{height:65px;min-width:68px;border-radius:8px;background:linear-gradient(180deg,#1c3b50,#102637);color:white;border:2px solid #7097ac;font-weight:800;font-size:12px}#actions #act{background:#80632e;border-color:#efd294}#panel{display:none;position:absolute;inset:12% 6%;background:#0b1924f7;border:3px solid #657f8e;border-radius:6px;padding:20px;overflow-y:auto;touch-action:pan-y;z-index:4}#panel h2{margin:0 0 12px}#panel button{border:1px solid #8abfe7;background:#183755;color:#fff;border-radius:8px;padding:12px;margin-top:12px;width:100%}.muted{color:#b8c6cc;font-size:13px}#hint{position:absolute;bottom:3px;left:0;right:0;text-align:center;color:#b4c9df;font-size:10px;pointer-events:none}@media(min-width:750px){#stick{width:110px;height:110px}#nub{left:29px;top:29px}#actions button{height:58px}}
 
 #hud small{font-size:9px;color:#f4b963}#info{min-width:192px}#message{box-shadow:0 10px 28px #000a}#controls{z-index:3}#panel{box-shadow:0 20px 45px #000b}#actions button:active,#menu:active{filter:brightness(1.22)}
 </style></head><body>
 <canvas id="game"></canvas>
-<div id="hud"><div id="info"><strong>★ NORTHWOOD PATROL <small>V0.3</small></strong><div id="status">UNIT P-1 · Available</div><div id="objective">Respond to dispatch</div></div><button id="menu">📋 Casebook</button></div>
+<div id="hud"><div id="info"><strong>★ NORTHWOOD PATROL <small>V0.4</small></strong><div id="status">UNIT P-1 · Available</div><div id="objective">Respond to dispatch</div></div><button id="menu">📋 Casebook</button></div>
 <div id="message"></div><div id="controls"><div id="stick"><div id="nub"></div></div><div id="actions"><button id="act">ACT</button><button id="drive">ENTER CAR</button></div></div><div id="hint">Move with joystick · ACT near objects · CAR by cruiser</div>
 <div id="panel"><h2>📋 Casebook</h2><div id="caseinfo"></div><button id="close">Return to Patrol</button><button id="restart">Restart Case</button></div>
 <script>
@@ -15,14 +15,19 @@ const c=document.getElementById('game'),ctx=c.getContext('2d'),msg=document.getE
 const W=2200,H=1600;let vw=0,vh=0,scale=1,camX=0,camY=0,frame=0,noticeUntil=0;
 const blocks=[{x:160,y:120,w:420,h:250,c:'#6c849a',name:'POLICE STATION'},{x:870,y:125,w:370,h:235,c:'#827fa0',name:'APARTMENTS'},{x:1560,y:130,w:480,h:255,c:'#a18967',name:'MARKET'},{x:170,y:850,w:430,h:280,c:'#967765',name:'NORTHWOOD ELECTRONICS'},{x:850,y:870,w:430,h:260,c:'#708777',name:'CLINIC'},{x:1570,y:870,w:410,h:260,c:'#988f73',name:'WAREHOUSE'}];
 const objects=[{x:360,y:470,kind:'station',icon:'★',label:'Station'},{x:710,y:705,kind:'car',icon:'🚔',label:'Patrol car'},{x:490,y:1195,kind:'scene',icon:'!',label:'Crime scene'},{x:375,y:1242,kind:'glass',icon:'◆',label:'Broken glass'},{x:580,y:1190,kind:'print',icon:'◆',label:'Shoe print'},{x:505,y:1330,kind:'camera',icon:'◆',label:'Camera footage'},{x:760,y:1205,kind:'witness',icon:'●',label:'Witness'},{x:1320,y:1240,kind:'suspect',icon:'●',label:'Suspect'}];
-let player={x:700,y:710},car={x:710,y:705},driving=false,caseStage=0,evidence=new Set(),witness=false,questioned=false,arrested=false,finished=false;
+let player={x:700,y:710},car={x:710,y:705},driving=false,caseStage=0,evidence=new Set(),witness=false,questioned=false,arrested=false,finished=false;let prisoner={x:1320,y:1240},custody='none';
 let motion={x:0,y:0},keys={};let tlast=performance.now(),moving=false,walkPhase=0,faceX=0,faceY=1,driveAngle=0;
 function resize(){vw=innerWidth;vh=innerHeight;const d=Math.min(devicePixelRatio||1,2);c.width=Math.round(vw*d);c.height=Math.round(vh*d);ctx.setTransform(d,0,0,d,0,0);ctx.imageSmoothingEnabled=false}
 addEventListener('resize',resize);resize();
 function say(s){msg.textContent=s;msg.style.display='block';noticeUntil=performance.now()+4700}
-function updateText(){const nearCar=Math.hypot(player.x-car.x,player.y-car.y)<125;const carButton=document.getElementById('drive');carButton.textContent=driving?'EXIT CAR':nearCar?'ENTER CAR':'🚔 FIND CAR';carButton.style.opacity=(driving||nearCar)?'1':'.65';status.textContent='UNIT P-1 · '+(finished?'Case closed':driving?'On patrol (vehicle)':'On foot');objective.textContent=finished?'Case solved! Return to patrol':arrested?'Return to the station and file report':questioned&&evidence.size===3&&witness?'Arrest the suspect':'Collect evidence and interview witnesses'}
-function nearest(max=115){let b=null,d=max;for(const o of objects){let dist=Math.hypot(player.x-o.x,player.y-o.y);if(dist<d){b=o;d=dist}}return b}
-function interact(){let o=nearest();if(!o){say('Move closer to a marked location to interact.');return}
+const jailPoint={x:360,y:470};
+function blocked(x,y,r=14){if(x<24+r||y<24+r||x>W-24-r||y>H-24-r)return true;return blocks.some(b=>x>b.x-r&&x<b.x+b.w+r&&y>b.y-r&&y<b.y+b.h+r)}
+function moveSolid(actor,dx,dy,r){const n=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/9));for(let i=0;i<n;i++){const nx=actor.x+dx/n;if(!blocked(nx,actor.y,r))actor.x=nx;const ny=actor.y+dy/n;if(!blocked(actor.x,ny,r))actor.y=ny}}
+function safeExit(x,y){for(const [dx,dy] of [[49,0],[-49,0],[0,56],[0,-56],[55,55],[-55,55]])if(!blocked(x+dx,y+dy,14))return{x:x+dx,y:y+dy};return{x,y}}
+function followPrisoner(dt){if(custody!=='escort'||!arrested)return;const dx=player.x-prisoner.x,dy=player.y-prisoner.y,d=Math.hypot(dx,dy);if(d>37){const step=Math.min(d-37,Math.max(3.6*dt,3.6*dt*(d/80)));moveSolid(prisoner,dx/d*step,dy/d*step,12)}}
+function updateText(){const nearCar=Math.hypot(player.x-car.x,player.y-car.y)<125;const carButton=document.getElementById('drive');carButton.textContent=driving?'EXIT CAR':nearCar?'ENTER CAR':'🚔 FIND CAR';carButton.style.opacity=(driving||nearCar)?'1':'.65';status.textContent='UNIT P-1 · '+(finished?'Case closed':custody==='vehicle'?'Prisoner in cruiser':custody==='escort'?'Escorting prisoner':driving?'On patrol (vehicle)':'On foot');objective.textContent=finished?'Suspect booked · Case closed':custody==='vehicle'?'Drive to station · park and book prisoner':custody==='escort'?'Escort suspect to car · then to station jail':questioned&&evidence.size===3&&witness?'Arrest the suspect':'Collect evidence and interview witnesses'}
+function nearest(max=115){let b=null,d=max;for(const o of objects){if(o.kind==='suspect'&&arrested)continue;if(o.kind==='car'&&driving)continue;const x=o.kind==='car'?car.x:o.x,y=o.kind==='car'?car.y:o.y;const dist=Math.hypot(player.x-x,player.y-y);if(dist<d){b=o;d=dist}}return b}
+function interact(){if(driving){say('Park and exit the cruiser before investigating or booking a prisoner.');return}let o=nearest();if(!o){say('Move closer to a marked location to interact.');return}
 switch(o.kind){
 case 'car':toggleCar();break;
 case 'scene':say('Dispatch: 10-31, burglary at Northwood Electronics. Investigate the scene and gather evidence.');caseStage=Math.max(caseStage,1);break;
@@ -30,16 +35,25 @@ case 'glass':case 'print':case 'camera':
 if(!evidence.has(o.kind)){evidence.add(o.kind);say(({glass:'Evidence bagged: shattered window glass.',print:'Evidence photographed: fresh shoe print.',camera:'CCTV recovered: blue-jacketed suspect seen leaving.'})[o.kind]);}else say('Evidence already collected.');break;
 case 'witness':witness=true;say('Witness: “I heard glass break. Someone in a blue jacket ran east toward the warehouse!”');break;
 case 'suspect':
-if(arrested){say('Suspect is already in custody.');break}
+if(arrested){say('Suspect is already handcuffed. Escort them to your cruiser.');break}
 if(!questioned){questioned=true;say('Suspect: “I was nowhere near the electronics store!” You note their blue jacket.');}
-else if(evidence.size>=3&&witness){arrested=true;say('Arrest made. Evidence and witness statement establish probable cause. Take the suspect to the station.');}
+else if(evidence.size>=3&&witness){arrested=true;custody='escort';prisoner.x=o.x;prisoner.y=o.y;say('Suspect handcuffed! They will follow you. Escort them to your cruiser, load them, and drive to jail.');}
 else say('Not enough evidence for an arrest. Find all 3 clues and interview the witness.');break;
-case 'station':if(arrested&&!finished){finished=true;say('CASE CLOSED! Report filed. Northwood PD commends your detective work. 🎖️');}else say('Northwood Police Station. Dispatch: investigate the burglary and return to file your report.');break;
+case 'station':
+if(arrested&&!finished&&custody==='escort'&&Math.hypot(prisoner.x-jailPoint.x,prisoner.y-jailPoint.y)<145&&Math.hypot(player.x-prisoner.x,player.y-prisoner.y)<125){finished=true;custody='booked';say('BOOKING COMPLETE! Suspect secured in the Northwood station jail. Case NW-001 closed. 🎖️')}
+else if(arrested&&!finished&&custody==='vehicle')say('Prisoner is still in the cruiser. Park, exit and escort them to booking.')
+else if(arrested&&!finished)say('Bring the handcuffed suspect with you to the jail booking entrance. They must be nearby.')
+else say('Northwood Police Station. Dispatch: investigate the burglary and bring the suspect to booking.');break;
 }updateText()}
-function toggleCar(){if(driving){driving=false;player.x=Math.min(W-25,car.x+48);say('You parked the cruiser. Continue investigating on foot.');updateText();return}if(Math.hypot(player.x-car.x,player.y-car.y)>125){say('The cruiser is marked 🚔 on your map. Walk near it to enter.');return}driving=true;player.x=car.x;player.y=car.y;say('🚔 Cruiser ready! Move the SAME joystick in any direction to drive. Tap EXIT CAR to park.');updateText()}
+function toggleCar(){
+if(driving){driving=false;const p=safeExit(car.x,car.y);player.x=p.x;player.y=p.y;if(custody==='vehicle'){custody='escort';prisoner.x=player.x+20;prisoner.y=player.y+23;say('Suspect unloaded from rear seat. Escort them to the station jail entrance and press ACT.')}else say('Cruiser parked. Continue on foot.');updateText();return}
+if(Math.hypot(player.x-car.x,player.y-car.y)>125){say('Walk closer to your police cruiser to enter.');return}
+if(custody==='escort'){if(Math.hypot(prisoner.x-car.x,prisoner.y-car.y)>105){say('Suspect is too far from the cruiser. Escort them closer before loading.');return}custody='vehicle';say('Suspect secured in rear seat. Drive to NORTHWOOD POLICE STATION to book them.')}
+else say('Cruiser ready! Same joystick to drive. Tap EXIT CAR to park.');
+driving=true;player.x=car.x;player.y=car.y;updateText()}
 document.getElementById('act').onclick=interact;document.getElementById('drive').onclick=toggleCar;
-const panel=document.getElementById('panel');function showPanel(){const clues=['glass','print','camera'].map(k=>(evidence.has(k)?'✅ ':'⬜ ')+({glass:'Window glass',print:'Shoe print',camera:'Security footage'})[k]).join('<br>');document.getElementById('caseinfo').innerHTML='<p><b>Case 001: Electronics Break-In</b></p><p class="muted">Northwood Electronics was burglarized. Investigate, question the witness, identify the suspect, then return to the station.</p><p>'+clues+'</p><p>'+(witness?'✅':'⬜')+' Witness interviewed</p><p>'+(questioned?'✅':'⬜')+' Suspect questioned</p><p>'+(arrested?'✅':'⬜')+' Suspect arrested</p><p>'+(finished?'🏆 Case closed':'📻 Case active')+'</p><p class="muted">Tip: Yellow icons mark people and locations. Cyan diamonds mark evidence. Use ACT to interact. Tap CAR near your cruiser to drive.</p>';panel.style.display='block';motion={x:0,y:0}}
-document.getElementById('menu').onclick=showPanel;document.getElementById('close').onclick=()=>panel.style.display='none';document.getElementById('restart').onclick=()=>{evidence.clear();witness=false;questioned=false;arrested=false;finished=false;driving=false;player={x:700,y:710};car={x:710,y:705};panel.style.display='none';say('New shift: Unit P-1, respond to Northwood Electronics.');updateText()};
+const panel=document.getElementById('panel');function showPanel(){const clues=['glass','print','camera'].map(k=>(evidence.has(k)?'✅ ':'⬜ ')+({glass:'Window glass',print:'Shoe print',camera:'Security footage'})[k]).join('<br>');document.getElementById('caseinfo').innerHTML='<p><b>Case 001: Electronics Break-In</b></p><p class="muted">Northwood Electronics was burglarized. Investigate, question the witness, identify the suspect, then return to the station.</p><p>'+clues+'</p><p>'+(witness?'✅':'⬜')+' Witness interviewed</p><p>'+(questioned?'✅':'⬜')+' Suspect questioned</p><p>'+(arrested?'✅':'⬜')+' Suspect arrested</p><p>'+(custody==='vehicle'?'🚔 In cruiser':custody==='escort'?'🚶 Being escorted':custody==='booked'?'🔒 Booked in jail':'⬜ Not in custody')+'</p><p>'+(finished?'🏆 Case closed':'📻 Case active')+'</p><p class="muted">Tip: Yellow icons mark people and locations. Cyan diamonds mark evidence. Use ACT to interact. Tap CAR near your cruiser to drive.</p>';panel.style.display='block';motion={x:0,y:0}}
+document.getElementById('menu').onclick=showPanel;document.getElementById('close').onclick=()=>panel.style.display='none';document.getElementById('restart').onclick=()=>{evidence.clear();witness=false;questioned=false;arrested=false;finished=false;driving=false;custody='none';prisoner={x:1320,y:1240};player={x:700,y:710};car={x:710,y:705};panel.style.display='none';say('New shift: Unit P-1, respond to Northwood Electronics.');updateText()};
 const stick=document.getElementById('stick'),nub=document.getElementById('nub');let pointer=null;
 function stickMove(e){const rect=stick.getBoundingClientRect(),cx=rect.left+rect.width/2,cy=rect.top+rect.height/2,dx=e.clientX-cx,dy=e.clientY-cy,len=Math.hypot(dx,dy)||1,r=Math.min(rect.width*.30,len);motion.x=dx/len*Math.min(1,len/(rect.width*.30));motion.y=dy/len*Math.min(1,len/(rect.width*.30));nub.style.transform='translate('+motion.x*r+'px,'+motion.y*r+'px)'}
 stick.addEventListener('pointerdown',e=>{pointer=e.pointerId;stick.setPointerCapture(pointer);stickMove(e)});stick.addEventListener('pointermove',e=>{if(pointer===e.pointerId)stickMove(e)});function stop(e){if(pointer!==e.pointerId)return;pointer=null;motion={x:0,y:0};nub.style.transform='translate(0,0)'}stick.addEventListener('pointerup',stop);stick.addEventListener('pointercancel',stop);
@@ -147,6 +161,7 @@ function drawCruiser(x,y,angle=0){
   if(moving&&driving&&frame%8<4){rect(-20,45,7,6,'#b4b3a1');rect(13,45,7,6,'#b4b3a1')}
   ctx.restore()
 }
+function drawPrisoner(x,y){drawNPC(x,y,'#4c6589');rect(x-9,y+1,18,5,'#d5d2c5');text('CUFFED',x,y-52,'#e7c484',11)}
 function drawMarker(o){
   const isEvidence=['glass','print','camera'].includes(o.kind);
   const pulse=2+Math.sin(frame*.07)*3;
@@ -175,8 +190,11 @@ function draw(){
   blocks.forEach((b,i)=>drawBuilding(b,i));
   for(const p of [[330,490],[980,770],[1210,510],[1810,788],[1980,1240]])parkedCar(...p,['#536d79','#7c6156','#526a63','#848782','#656983'][(p[0]/10|0)%5]);
   crimeScene();
-  for(const o of objects){if(driving&&o.kind==='car')continue;if(evidence.has(o.kind))continue;drawMarker(o)}
+  for(const o of objects){if(driving&&o.kind==='car')continue;if(arrested&&o.kind==='suspect')continue;if(evidence.has(o.kind))continue;drawMarker(o)}
+  if(custody==='vehicle'){text('PRISONER ON BOARD',player.x,player.y-69,'#f4d28e',11)}
+  if(custody==='booked'){text('JAIL: OCCUPIED',jailPoint.x,jailPoint.y-75,'#e9c987',11)}
   if(driving)drawCruiser(player.x,player.y,driveAngle);else drawOfficer(player.x,player.y);
+  if(arrested&&custody==='escort')drawPrisoner(prisoner.x,prisoner.y);
   ctx.restore();
   // Subtle dusk grading and screen texture; touch controls remain HTML overlays.
   const g=ctx.createRadialGradient(vw/2,vh/2,40,vw/2,vh/2,Math.max(vw,vh)*.72);
@@ -185,7 +203,7 @@ function draw(){
   drawMiniMap();
   if(performance.now()>noticeUntil)msg.style.display='none';frame++
 }
-function loop(t){const dt=Math.min((t-tlast)/16.67,2);tlast=t;if(panel.style.display!=='block'){let dx=motion.x+(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dy=motion.y+(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);const len=Math.max(1,Math.hypot(dx,dy)),speed=(driving?10:3.5)*dt;moving=Math.hypot(dx,dy)>.07;if(moving){faceX=dx;faceY=dy;walkPhase+=dt*.30;if(driving)driveAngle=Math.atan2(dy,dx)+Math.PI/2;}player.x=Math.max(25,Math.min(W-25,player.x+dx/len*speed));player.y=Math.max(25,Math.min(H-25,player.y+dy/len*speed));if(driving){car.x=player.x;car.y=player.y}if(frame%12===0)updateText()}draw();requestAnimationFrame(loop)}
+function loop(t){const dt=Math.min((t-tlast)/16.67,2);tlast=t;if(panel.style.display!=='block'){let dx=motion.x+(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dy=motion.y+(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);const len=Math.max(1,Math.hypot(dx,dy)),speed=(driving?10:3.5)*dt;moving=Math.hypot(dx,dy)>.07;if(moving){faceX=dx;faceY=dy;walkPhase+=dt*.30;if(driving)driveAngle=Math.atan2(dy,dx)+Math.PI/2;}moveSolid(player,dx/len*speed,dy/len*speed,driving?25:13);if(driving){car.x=player.x;car.y=player.y}else followPrisoner(dt)if(frame%12===0)updateText()}draw();requestAnimationFrame(loop)}
 updateText();say('📻 Dispatch to P-1: burglary at Northwood Electronics, southwest district. Respond and investigate!');requestAnimationFrame(loop);
 })();
 </script></body></html>
