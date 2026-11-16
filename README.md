@@ -4,9 +4,18 @@ Mobile-first, top-down **police patrol and detective pixel-art game**.
 
 ## Play on iPhone
 
-**[Play Northwood Patrol](https://liamg52.github.io/Northwood-Patrol/?v=0.4)**
+**[Play Northwood Patrol](https://liamg52.github.io/Northwood-Patrol/?v=0.5)**
 
 Rotate your phone to **landscape (horizontal)**. If the screen will not rotate, disable iOS Portrait Orientation Lock in Control Center.
+
+## Version 0.5 — Living Town
+
+- 14 ambient pedestrians on sidewalk loops, with short conversations via **ACT**
+- 8 moving civilian vehicles on road routes, with basic yielding near the cruiser
+- Repeatable dispatch calls after finishing the first case: store alarm, welfare check, park disturbance, motorist assistance
+- Follow the new gold call marker, exit your vehicle, and use **ACT** to complete a follow-up call
+- Patrol completion count and next call details appear in the Casebook
+- Existing 45° isometric camera, landscape layout, larger joystick, solid building collisions, and custody flow remain intact
 
 ## Version 0.4
 
@@ -26,10 +35,14 @@ Rotate your phone to **landscape (horizontal)**. If the screen will not rotate, 
 5. Drive to the **Police Station**, then tap **EXIT CAR** to unload the suspect
 6. Escort the suspect to the **JAIL / BOOKING** entrance and press **ACT**
 
+## Continue patrolling
+
+After booking the suspect from Case NW-001, a new dispatch call arrives automatically. Follow the gold marker, stop nearby, exit the cruiser, and press **ACT** to clear the call. A different call will follow. This is a first-pass repeating call system, not a full investigation for every call.
+
 ## Controls
 
 - Left on-screen joystick: walk or drive; direction follows the angled screen
-- **ACT**: interact with evidence, witnesses, suspect, and jail booking
+- **ACT**: interact with evidence, witnesses, suspect, jail booking, civilians and active dispatch markers
 - **ENTER CAR / EXIT CAR**: enter and exit the cruiser
 - **Casebook**: view evidence and custody status
 
